@@ -14,6 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	"math"
 	"net"
 	"os"
@@ -730,7 +731,7 @@ func RemoveArchFromServiceId(sId string) string {
 }
 
 func NewKubeConfig() (*rest.Config, error) {
-	config, err := rest.InClusterConfig()
+	config, err := clientcmd.BuildConfigFromFlags("", "/home/max/.microk8s/config")
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get cluster config information: %v", err)
 	}

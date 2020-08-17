@@ -212,10 +212,13 @@ func (c KubeClient) Install(tar string, envVars map[string]string, agId string) 
 
 		unstructCr := unstructured.Unstructured{Object: newCr}
 
+		glog.Errorf("Maxwell: cr client is %v", crClient)
+
 		// the cluster has to create the endpoint for the custom resource, this can take some time
 		glog.V(3).Infof(kwlog(fmt.Sprintf("creating operator custom resource %v", newCr)))
 		for {
 			_, err := crClient.Namespace(namespace).Create(&unstructCr, metav1.CreateOptions{})
+			glog.Errorf("Error creating custom resource %v. Retrying in 5 seconds.", err)
 			if err != nil {
 				time.Sleep(time.Second * 5)
 			} else {
@@ -532,6 +535,12 @@ func makeAllKeysStrings(unmarshYaml interface{}) interface{} {
 			}
 		}
 		return retMap
+	} else if reflect.ValueOf(unmarshYaml).Kind() == reflect.Slice {
+		correctedSlice := make([]interface{}, len(unmarshYaml.([]interface{})))
+		for _, elem := range unmarshYaml.([]interface{}) {
+			correctedSlice = append(correctedSlice, makeAllKeysStrings(elem))
+		}
+		return correctedSlice
 	}
 	return unmarshYaml
 }
