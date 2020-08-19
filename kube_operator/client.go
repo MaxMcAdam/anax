@@ -212,8 +212,6 @@ func (c KubeClient) Install(tar string, envVars map[string]string, agId string) 
 
 		unstructCr := unstructured.Unstructured{Object: newCr}
 
-		glog.Errorf("Maxwell: cr client is %v", crClient)
-
 		// the cluster has to create the endpoint for the custom resource, this can take some time
 		glog.V(3).Infof(kwlog(fmt.Sprintf("creating operator custom resource %v", newCr)))
 		for {
@@ -225,6 +223,7 @@ func (c KubeClient) Install(tar string, envVars map[string]string, agId string) 
 				break
 			}
 		}
+
 	}
 	glog.V(3).Infof(kwlog(fmt.Sprintf("all operator objects installed")))
 
