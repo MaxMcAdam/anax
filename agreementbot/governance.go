@@ -34,7 +34,9 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 
 	// A filter for limiting the returned set of agreements just to those that are in progress and not yet timed out.
 	notYetFinalFilter := func() persistence.AFilter {
-		return func(a persistence.Agreement) bool { return a.AgreementCreationTime != 0 && a.AgreementTimedout == 0 }
+		return func(a persistence.Agreement) bool {
+			return a.AgreementCreationTime != 0 && a.AgreementTimedout == 0 && a.AgreementFinalizedTime != 0
+		}
 	}
 
 	// Reset the updated status of the Node Health manager. This ensures that the agbot will attempt to get updated status
@@ -45,6 +47,10 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 	for _, agp := range policy.AllAgreementProtocols() {
 
 		protocolHandler := w.consumerPH.Get(agp)
+
+		// Use the time right before the agreements are retireved from the database for comparison
+		// Avoid cancelling agreements finalized and timed out while the loop is running
+		now := uint64(time.Now().Unix())
 
 		// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized on blockchain.
 		if agreements, err := w.db.FindAgreements([]persistence.AFilter{notYetFinalFilter(), persistence.UnarchivedAFilter()}, agp); err == nil {
@@ -83,7 +89,6 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 							}
 
 							// First check to see if this agreement is just not sending data. If so, terminate the agreement.
-							now := uint64(time.Now().Unix())
 							noDataLimit := w.BaseWorker.Manager.Config.AgreementBot.NoDataIntervalS
 							if ag.DataVerificationNoDataInterval != 0 {
 								noDataLimit = uint64(ag.DataVerificationNoDataInterval)
