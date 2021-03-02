@@ -22,7 +22,7 @@ func GetKubeDeployment(deployStr string) (*KubeDeploymentConfig, error) {
 	err := json.Unmarshal([]byte(deployStr), kd)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshaling deployment config as KubeDeployment: %v", err)
-	} else if kd.OperatorYamlArchive == "" {
+	} else if kd != nil && kd.OperatorYamlArchive == "" {
 		return nil, fmt.Errorf("required field 'operatorYamlArchive' is missing in the deployment string.")
 	}
 	return kd, nil

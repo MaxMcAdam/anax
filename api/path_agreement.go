@@ -29,8 +29,7 @@ func FindAgreementsForOutput(db *bolt.DB) (map[string]map[string][]persistence.E
 	wrap[agreementsKey][activeKey] = []persistence.EstablishedAgreement{}
 
 	for _, agreement := range agreements {
-		// The archived agreements and the agreements being terminated are returned as archived.
-		if agreement.Archived || agreement.AgreementTerminatedTime != 0 {
+		if agreement.Archived {
 			wrap[agreementsKey][archivedKey] = append(wrap[agreementsKey][archivedKey], agreement)
 		} else {
 			wrap[agreementsKey][activeKey] = append(wrap[agreementsKey][activeKey], agreement)
